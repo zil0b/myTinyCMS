@@ -1,0 +1,7 @@
+/*
+
+	here will come a mini fast php course
+
+*/
+
+ne pas replacer les librairies. Il faut en ajouter. Ne pas ecraser les fichier. Toujours avoir un backup appelé hotfix d'une version fonctionnelle et ok.

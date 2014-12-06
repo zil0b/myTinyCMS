@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- templateChunk model -->
+<template id="administration" number="" topic="" links="">
+    
+    <!-- HEADER CONTENT -->
+    <header>
+        
+        <assert>
+            
+            <![CDATA[
+                
+                :: HERE COMES SERVER/CLIENT SIDE SNIPPETS ::
+                
+            ]]>
+            
+        </assert>
+        
+        <!--  -->
+        <content>
+            
+            <style id="" />
+            
+            <style id="standard">
+                
+                body
+                {
+                /* background-color:red; */
+                font-family:verdana;
+                font-size:10px;
+                margin:0px 0px 0px 0px;
+                padding:0px;
+                }
+                
+                .style_01
+                {
+                /* some style in */
+                }
+                
+                div
+                {
+                /* border: grey 1px solid ; */
+                
+                cursor:pointer;
+                }
+                
+                .dirPath
+                {
+                background-color:yellow;
+                }
+                
+                .red
+                {
+                color:red;
+                }
+                
+                .green
+                {
+                color:green;
+                }
+                
+                .panel 
+                {
+                position: fixed;
+                background:#eee;
+                top: 1em;
+                right: 2%;
+                border: 1px solid #000000;
+                padding: 1em;
+                z-index: 10;
+                width: 200;
+                }
+                
+                .adminMenu 
+                {
+                position: fixed;
+                background:#eee;
+                top: 1em;
+                left: 2%;
+                border: 1px solid #000000;
+                padding: 1em;
+                z-index: 10;
+                width: 200;
+                }
+                
+            </style>
+            
+            <script id="prototype" number="" >
+                
+                <![CDATA[
+                    
+                        <script src="./Cms/Objects/prototype.js"></script> 
+                    
+                    ]]>
+                    
+            </script>
+            
+                <script id="topScript" number="">
+                
+                <![CDATA[
+                    
+                    function trim( content )
+                        {
+                        	return content.replace(/^\s+|\s+$/g,"");
+                        }
+                  
+                  function collapse(pDom)
+                      {
+                           switch(pDom.innerHTML)
+                               {
+                                  case "[_]":
+                                      pDom.innerHTML = "[+]";
+                                      break;
+                                  case "[+]":
+                                      pDom.innerHTML = "[_]";
+                                      break;
+                              }
+                      }
+                  
+                    function showHide(pDom,pFlg)
+                        {
+                          if(pDom.style.display=='none')
+                                  pDom.style.display='' ;
+                          else
+                                  pDom.style.display='none' ;
+                         }
+                  
+                   function doHtml( content )
+                       {
+                          content = content.replace(/&lt;/g, "<").replace(/&gt;/g,">");
+                          
+                       return content ;
+                       }
+                   
+                    function feedContainer( pDom )
+                        /* 
+                            
+                        */
+                        {
+                            var ctc = pDom.innerHTML ;
+                            cpt = document.getElementById('iCounter') ;
+                            var nbr = Number((cpt.value)) ;
+                            if(trim(ctc).substring(0,4) != "<tex" && trim(ctc).substring(0,4) != "<TEX" )
+                                {
+                                    cpt.value = nbr +1 ;
+                                    pDom.innerHTML = "<textarea id='t_"+nbr+"' style='width:99%' rows='10' cols='20'>" + trim(ctc) + "</textarea>" ; 
+                                }
+                            else 
+                                {
+                                    cpt.value = nbr -1 ;
+                                    placeContent( pDom.firstChild.value, pDom.id ) ;
+                                }
+                        }
+                    
+                    var _ = function() {} ;
+                    
+                    // object access
+                    _.prototype.oa = {
+                        
+                        tab:new Array(),
+                        
+                        getNodesById:function(pDom, pId)
+                            /**
+                                getNodes by id function
+                            */
+                            {
+                                 if(pDom.getElementsByTagName)
+                                     {
+                                         all = pDom.getElementsByTagName("*") ;
+                                             for(g=0; g<all.length; g++)
+                                                 {
+                                                     if( all[g].getAttribute && all[g].getAttribute("id") == pId )
+                                                         {
+                                                             this.tab.push(all[g]) ;
+                                                         }
+                                                 }
+                                             
+                                     return this.tab ;
+                                     }
+                            },
+                        
+                        getNodesWithId:function(pDom, pId)
+                            /**
+                                getNodes by id function
+                            */
+                            {
+                                 if(pDom.getElementsByTagName)
+                                     {
+                                         var reg=new RegExp("("+pId+")","g") ;
+                                         all = pDom.getElementsByTagName("*") ;
+                                         for(g=0; g<all.length; g++)
+                                             {
+                                                 if( all[g].getAttribute && reg.test(all[g].getAttribute("id")) )
+                                                     {
+                                                         this.tab.push(all[g]) ;
+                                                     }
+                                             }
+                                         
+                                     return this.tab ? this.tab : false ;
+                                     }
+                            },
+                        
+                        each:function() // pAction
+                            /**
+                            
+                            */
+                            {
+                                for(var i=0;i<this.tab.length;i++)
+                                    {
+                                        // 
+                                    }
+                            }
+                    }
+                    
+                    _.prototype.Remote = {
+
+                    	getConnector: function() 
+                        	{
+                        		var connectionObject = null ;
+                        		if (window.XMLHttpRequest)
+                            		{
+                            			connectionObject = new XMLHttpRequest() ;
+                            		} 
+                        		else if (window.ActiveXObject) 
+                            		{
+                            			connectionObject = new ActiveXObject('Microsoft.XMLHTTP') ;
+                            		}
+                        		return connectionObject ;
+                        	},
+                    
+                    	configureConnector: function(connector, callback) 
+                        	{
+                        		connector.onreadystatechange = function() 
+                            		{
+                            			if (connector.readyState == 4) 
+                                			{
+                                				if (connector.status == 200) 
+                                    				{
+                                    					callback.call(connector, {
+                                        					text: connector.responseText,
+                                        					xml: connector.responseXML
+                                    					});
+                                    				}
+                                			}
+                            		}
+                        	},
+                    	
+                    	load: function(request) 
+                        	{
+                        		var url = request.url || "" ;
+                        		var callback = request.callback || function() {} ;
+                                
+                        		var connector = this.getConnector() ;
+                        		if (connector) 
+                            		{
+                            			this.configureConnector(connector, callback) ;
+                            			connector.open("GET", url, true) ;
+                            			connector.send("") ;
+                            		}
+                        	},
+                    	
+                    	save: function(request) 
+                        	{
+                        		var url = request.url || "" ;
+                        		var callback = request.callback || function() {} ;
+                        		var data = request.data || "" ;
+                        		var connector = this.getConnector() ;
+                        		if (connector) 
+                            		{
+                            			this.configureConnector(connector, callback);
+                            			connector.
+                            			    open("POST", url, true);
+                            			connector.
+                            			    setRequestHeader("Content-type", "application/x-www-form-urlencoded") ;
+                            			connector.
+                            				setRequestHeader("Content-length", data.length) ;
+                            			connector.
+                            				setRequestHeader("Connection", "close") ;
+                            			connector.
+                            				send(data);
+                            		}
+                        	}
+                    }
+                    
+                    function placeContent ( pContent, pIdTarget )
+                        /**
+                               set the content to targetted container 
+                        */
+                        {
+                            new Ajax.Request('./main.php',
+                                {
+                                    method:'get',
+                                    parameters:"qry=2&id=" + pIdTarget + "&content=" + pContent,
+                                    onSuccess: function(transport)
+                                    {
+                                       var nfo = segment( transport.responseText ) ;
+                                       var node = document.getElementById( nfo[0] ) ;
+                                       node.innerHTML = nfo[2] ;
+                                       
+                                       feedContent() ;
+                                    },
+                                    onFailure: function(){ }
+                                });
+                            
+                            /*
+                                 _.Remote.save(
+                                     {
+                                        url: "./main.php",
+                                        data: "qry=2&id=" + pIdTarget + "&content=" + pContent,
+                                        callback: function(response)
+                                            {
+                                               var nfo = segment( response.text ) ;
+                                               var node = document.getElementById( nfo[0] ) ;
+                                               node.innerHTML = nfo[2] ;
+                                               
+                                               _.oa.tab = new Array() ;
+                                               feedContent() ;
+                                            }
+                                      }
+                                 );
+                             */
+                        }
+                        
+                        _ = new _() ;
+    
+                       function execScript(pFeed)
+                           /*
+                           
+                           */
+                           {
+                               var node = pFeed.getElementsByTagName("script");
+                               for(var i=0;i<node.length;i++)
+                               {
+                                   eval(node[i]) ;
+                               }
+                            }
+
+                       function segment(pStr)
+                            /**
+                            
+                            */
+                            {
+                                var reg=new RegExp("~~+", "g") ;
+                                
+                            return pStr.split(reg) ;
+                            }
+                        
+                        function isToFeed()
+                            /**
+                                check is still to feed
+                            */
+                            {
+                                return  (set = _.oa.getNodesWithId(document.body,"lay") )?set:false  ;
+                            }
+                        
+                        function setContent(pIdTarget, pQry)
+                            /**
+                                 set the content
+                            */
+                            {
+                                _.Remote.save({
+                                    url: "./main.php" ,
+                                    data: pQry+ "&owner=Root&target=admin&id=" + pIdTarget ,
+                                    callback: function(response)
+                                    {
+                                       var nfo = segment( response.text ) ;
+                                       var node = document.getElementById( nfo[0] ) ;
+
+                                       if(node != null)
+                                       { 
+                                           node.innerHTML = nfo[2] ;
+                                       }
+                                    }
+                                });
+                            }
+                         
+                        function feedLayout()
+                            /**
+                                feed the layout
+                            */
+                            {
+                                    var ctc = _.oa.getNodesWithId(document.body,"lay") ;
+                                    if(ctc[0])
+                                       _.Remote.save({
+                                            url: "./main.php",
+                                            data: "qry=1&id="+ctc[0].id+"&template=admin&owner="+document.getElementById("customerName").value,
+                                            callback: function(response)
+                                            {
+                                               var nfo = segment( response.text ) ;
+                                               var node = document.getElementById( nfo[0] ) ;
+                                               node.innerHTML = nfo[2] ;
+                                               node.id = nfo[1] ;
+                                               
+                                               _.oa.tab = new Array() ;
+                                               feedContent() ;
+                                            }
+                                        });
+                                }
+                        
+                        function feedData()
+                            /**
+                                feed the data
+                            */
+                            {
+                                var ctc = _.oa.getNodesWithId(document.body,"data") ;
+                                if(ctc[0])
+                                   _.Remote.save({
+                                        url: "./main.php",
+                                        data: "qry=1&id="+ctc[0].id+"&template=admin&owner="+document.getElementById("customerName").value,
+                                        callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           var node = document.getElementById( nfo[0] ) ;
+                                           node.innerHTML = nfo[2] ;
+                                           node.id = nfo[1] ;
+                                           
+                                           _.oa.tab = new Array() ;
+                                           feedContent() ;
+                                        }
+                                   });
+                            }
+
+                    ]]>
+                    
+                </script>
+                
+                <script id="endScript" number="">
+                    
+                    <![CDATA[
+                    
+                        /*
+                        
+                            lasts page executions
+                        
+                        */
+                        
+                        // add content to pageContent
+                        setContent( 'pageContent', 'qry=4' ) ;
+                        
+                        function feedContent()
+                            /**
+                                feed the content of the page by tag expr and Id
+                            */
+                            {
+                                feedLayout() ;
+                                feedData() ;
+                            }
+                        
+                    ]]>
+                    
+                </script>
+                    
+                <script id="pagerScript" number="">
+                    
+                    <![CDATA[
+                    	
+    				<script language='javascript' type='text/javascript'>
+                        
+    					function editFileContent(pUrl)
+    					/*
+    					    Edit the file mod textarea
+    					*/					   
+        					{
+        					    $('iPath').value = pUrl ;
+        					    $('cMod').show() ;
+        					    $('iMod').value = "" ;
+        					     
+            					new Ajax.Request(pUrl,
+            						{
+            						  method:'get',
+            						  onSuccess: function(transport)
+                                        {
+                                             $('iMod').value = transport.responseText ;
+                                        },
+            						  onFailure: function(){ },
+            						  oComplete:function(transport)
+            						      {
+            						        
+            						      }
+            						});
+        					}
+        					
+    					function saveMod()
+    					/*
+    					    Save the file mod textarea content
+    					*/
+    					    {
+    					       var _content = $('iMod').value ;
+    					       var _path = '../../../' + $('iPath').value ;
+    						   
+    					        new Ajax.Request('./Cms/Objects/Backend/responder.inc.php',
+            						{
+                                        method:'get',
+                                        parameters:{ qry:6, path:_path, content:_content },
+                                        onSuccess: function( transport )
+                                            {
+                                                $('cMod').hide() ;
+                                                $('iMod').innerHTML = "" ;
+                                                $('addUserCom').innerHTML = transport.responseText  ;
+                                            },
+                                        onFailure: function(){ }
+            						});
+    					    }
+    				</script>
+                        
+                    ]]>
+                </script>
+                    
+        </content>
+        
+    </header>
+    
+    <!-- HEADER CONTENT -->
+    <main>
+        
+        <assert>
+            
+            <![CDATA[
+                
+                :: HERE COMES SERVER/CLIENT SIDE SNIPPETS ::
+                
+            ]]>
+            
+        </assert>
+        
+        <!--  -->
+        <content>
+            
+            <page id="loginPane">
+                    
+                   <![CDATA[
+                    <div id="cLogPane">
+                        
+                        <form action="" method="post" name="form1">
+                        
+                            <input name ="iLogin" id="iLogin" type="text" value=" " style="width:96%;" /><br/>
+                            <input id="iButton" type="submit" value="log on"  style="width:100%;" />
+                            
+                        </form>
+                        
+                    </div>
+                    ]]>
+                        
+            </page>
+            
+            <page id="menuPane">
+                
+                <![CDATA[
+                    
+                    <div class="panel">
+                        
+                        <span style="cursor:pointer;" onclick="showHide($('cMenu'),1);collapse(this);">[+]</span>
+                        <span id="cMenu">
+                            <p />
+                            <span onclick="showHide($('loginPane'),2);">:: Login Pane ::</span>
+                            <span><div id="lay:loginPane" ></div></span>
+                        </span>
+                        
+                    </div>
+                    
+                ]]>
+                
+            </page>
+            
+            <page id="adminPage">
+                
+                <![CDATA[
+                    
+                    <span id="lay:menuPane"></span>
+                    
+                    <span id="pageContent"></span>
+                    
+                ]]>
+                
+            </page>
+            
+        </content>
+        
+    </main>
+    
+    <!-- PAGE CONTENT -->
+    <frameset>
+        
+        <assert>
+            
+            <code type="text/javascript" id="scr_01">
+                
+                <![CDATA[
+ 
+                    function lastScript()
+                    {
+                        return "this is last script";
+                    }
+ 
+                ]]>
+                
+            </code>
+
+        </assert>
+        
+        <content><!--  -->
+            
+            <![CDATA[
+            
+                <?xml version="1.0" encoding="UTF-8" ?>
+                {{inc:token[xhtmlstrict]}}
+                <html>
+                    
+                    <head>
+                        
+                        <style>{{inc:style[standard]}}</style>
+                        <script>{{inc:script[topScript]}}</script>
+                        
+                        {{inc:script[prototype]}}
+                        
+                    </head>
+                    
+                    <body onload="feedContent()">
+                    
+                         {{inc:customer}}
+                         {{inc:logged}}
+                         
+                         {{inc:page[adminPage]}}
+                         
+                    </body>
+                    
+                    {{inc:script[pagerScript]}}
+                    
+                    <script>{{inc:script[endScript]}}</script>
+                    
+                </html>
+             
+            ]]>
+            
+        </content>
+        
+    </frameset>
+    
+    <tokens>
+        
+        <token id="HTML4">
+            
+            <![CDATA[
+                 
+                    <!DOCTYPE HTML PUBLIC 
+                        "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                        "http://www.w3.org/TR/html4/loose.dtd">
+                 
+           ]]>
+           
+        </token>
+        
+        <token id="xhtmlstrict">
+            
+            <![CDATA[
+                 
+                 <!DOCTYPE html PUBLIC
+                     "-//W3C//DTD XHTML 1.0 Strict//EN" 
+                     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+                     
+           ]]>
+           
+        </token>
+        
+        <token id="xhtml_xmlns">
+            
+            <![CDATA[
+                
+                http://www.w3.org/1999/xhtml
+                
+            ]]>
+            
+        </token>
+        
+    </tokens>
+    
+	<framesets />
+	<pages />
+	<styles />
+	<scripts />
+	
+</template>

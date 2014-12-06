@@ -1,0 +1,783 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- templateChunk model -->
+<template id="nested" number="" topic="" links="">
+    
+	<scripts>	
+	        <script id=""/>	
+		<script id="testScript">// $('mainContent').onDblClick = "feedContainer(this);";
+//</script>
+        <script id="prototype" number="">
+           
+           <![CDATA[
+           
+               <script src="./Cms/Objects/prototype.js"></script> 
+           
+           ]]>
+           
+       	</script>
+            
+            <script id="editor" number="">
+                
+                // inject special tags in the textPad as bold, strike...
+                // input	target place, start position, end position
+                // output	nonde
+                function txtInject(trg,repdeb, repfin)
+                {//
+                	document.all('txt#content').focus();
+                	/* pour l'Explorer Internet */
+                	if(typeof document.selection != 'undefined')
+                	{
+                		/* Insertion du code de formatage */
+                		var range = document.selection.createRange();
+                		var insText = range.text;
+                		range.text = repdeb + insText + repfin;
+                		/* Ajustement de la position du curseur */
+                		range = document.selection.createRange();
+                		if (insText.length == 0)
+                		{
+                			range.move('character', -repfin.length);
+                		} else {
+                			range.moveStart('character', repdeb.length + insText.length + repfin.length);
+                		}
+                		range.select();
+                	}
+                	/* pour navigateurs plus récents basés sur Gecko*/
+                	else if(typeof input.selectionStart != 'undefined')
+                	{
+                		/* Insertion du code de formatage */
+                		var start = input.selectionStart;
+                		var end = input.selectionEnd;
+                		var insText = input.value.substring(start, end);
+                		input.value = input.value.substr(0, start) + repdeb + insText + repfin + input.value.substr(end);
+                		/* Ajustement de la position du curseur */
+                		var pos;
+                		if (insText.length == 0)
+                		{
+                			pos = start + repdeb.length;
+                		} else {
+                			pos = start + repdeb.length + insText.length + repfin.length;
+                		}
+                		input.selectionStart = pos;
+                		input.selectionEnd = pos;
+                	} else {
+                		/* requête de la position d'insertion */
+                		var pos;
+                		var re = new RegExp('^[0-9]{0,3}$');
+                		while(!re.test(pos))
+                		{
+                			pos = prompt("Insertion à la position (0.." + input.value.length + "):", "0");
+                		}
+                		if(pos &gt; input.value.length)
+                		{
+                			pos = input.value.length;
+                		}
+                		/* Insertion du code de formatage */
+                		var insText = prompt("Veuillez entrer le texte à formater:");
+                		input.value = input.value.substr(0, pos) + repdeb + insText + repfin + input.value.substr(pos);
+                	}
+                }//
+                                
+                // sort a text pad in the main gui if double clicked on the content zone
+                // input	content string, text container id
+                // output	reformated string
+                function tinyTextPad(str,txt_id)
+                {// text editor
+                
+                	// set the utilities images on the content zone of the container
+                	str= "&lt;div id='txtPad' align='left'&gt;&lt;img src='./Cms/Images/bold.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;b&gt;","&lt;/b&gt;");' /&gt;&lt;img src='./Cms/Images/italic.gif' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;i&gt;","&lt;/i&gt;");' /&gt;&lt;img src='./Cms/Images/underline.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;u&gt;","&lt;/u&gt;");' /&gt;&lt;img src='./Cms/Images/stroke.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;s&gt;","&lt;/s&gt;");' /&gt;&lt;img src='./Cms/Images/p.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;p&gt;","&lt;/p&gt;");' /&gt; | &lt;img src='./Cms/Images/ul.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;ul&gt;","&lt;/ul&gt;");' /&gt;&lt;img src='./Cms/Images/li.gif' style='cursor:pointer;' onclick='trg=parentNode.nextSibling;txtInject(trg,"&lt;li&gt;","&lt;/li&gt;");' /&gt;&lt;/div&gt;&lt;textarea id='"+txt_id+"' rows='15'&gt;"+str+"&lt;/textarea&gt;";
+                
+                return str;
+                }//</script>
+                
+                <script id="topScript" number="">
+                
+                <![CDATA[
+                    
+                    function reformat( pContent )
+                        {
+                            return pContent.replace(/=/gi,'``i').replace(/\"/gi,'``o').replace(/\?/g,'``q').replace(/&/g,'``e').replace(/%/g,'``u').replace(/#/g,'``a');
+                        }
+                    
+                    function trim( content )
+                        {
+                        	return content.replace(/^\s+|\s+$/g,"");
+                        }
+                  
+                    function collapse(pDom)
+                      {
+                           switch(pDom.innerHTML)
+                               {
+                                  case "[_]":
+                                      pDom.innerHTML = "[+]";
+                                      break;
+                                  case "[+]":
+                                      pDom.innerHTML = "[_]";
+                                      break;
+                              }
+                      }
+                  
+                    function showHide(pDom,pFlg)
+                        {
+                          if(pDom.style.display=='none')
+                                  pDom.style.display='' ;
+                          else
+                                  pDom.style.display='none' ;
+                         }
+                  
+                   function doHtml( content )
+                       {
+                          content = content.replace(/&lt;/g, "<").replace(/&gt;/g,">");
+                          
+                       return content ;
+                       }
+                   
+                    function feedContainer( pDom )
+                        /* 
+                            
+                        */
+                        {
+                            var ctc = pDom.innerHTML ;
+                            cpt = document.getElementById('iCounter') ;
+                            var nbr = Number((cpt.value)) ;
+                            if(trim(ctc).substring(0,4) != "<tex" && trim(ctc).substring(0,4) != "<TEX" )
+                                {
+                                    cpt.value = nbr +1 ;
+                                    pDom.innerHTML = "<textarea id='t_"+nbr+"' style='width:99%' rows='10' cols='20'>" + trim(ctc) + "</textarea>" ; 
+                                }
+                            else 
+                                {
+                                    cpt.value = nbr -1 ;
+                                    placeContent( pDom.firstChild.value, pDom.id ) ;
+                                }
+                        }
+                    
+                    var _ = function() {} ;
+                    
+                    // object access
+                    _.prototype.oa = {
+                        
+                        tab:new Array(),
+                        
+                        getNodesById:function(pDom, pId)
+                            /**
+                                getNodes by id function
+                            */
+                            {
+                                 if(pDom.getElementsByTagName)
+                                     {
+                                         all = pDom.getElementsByTagName("*") ;
+                                             for(g=0; g<all.length; g++)
+                                             {
+                                                 if( all[g].getAttribute && all[g].getAttribute("id") == pId )
+                                                     {
+                                                         this.tab.push(all[g]) ;
+                                                     }
+                                             }
+                                             
+                                     return this.tab ;
+                                     }
+                            },
+                        
+                        getNodesWithId:function(pDom, pId)
+                            /**
+                                getNodes by id function
+                            */
+                            {
+                                 if(pDom.getElementsByTagName)
+                                     {
+                                         var reg=new RegExp("("+pId+")","g") ;
+                                         all = pDom.getElementsByTagName("*") ;
+                                         for(g=0; g<all.length; g++)
+                                             {
+                                                 if( all[g].getAttribute && reg.test(all[g].getAttribute("id")) )
+                                                     {
+                                                         this.tab.push(all[g]) ;
+                                                     }
+                                             }
+                                         
+                                     return this.tab ? this.tab : false ;
+                                     }
+                            },
+                        
+                        each:function() // pAction
+                            /**
+                            
+                            */
+                            {
+                                for(var i=0;i<this.tab.length;i++)
+                                    {
+                                        // 
+                                    }
+                            }
+                    }
+                    
+                    _.prototype.Remote = {
+
+                    	getConnector: function() 
+                        	{
+                        		var connectionObject = null ;
+                        		if (window.XMLHttpRequest)
+                            		{
+                            			connectionObject = new XMLHttpRequest() ;
+                            		} 
+                        		else if (window.ActiveXObject) 
+                            		{
+                            			connectionObject = new ActiveXObject('Microsoft.XMLHTTP') ;
+                            		}
+                        		return connectionObject ;
+                        	},
+                    
+                    	configureConnector: function(connector, callback) 
+                        	{
+                        		connector.onreadystatechange = function() 
+                            		{
+                            			if (connector.readyState == 4) 
+                                			{
+                                				if (connector.status == 200) 
+                                    				{
+                                    					callback.call(connector, {
+                                        					text: connector.responseText,
+                                        					xml: connector.responseXML
+                                    					});
+                                    				}
+                                			}
+                            		}
+                        	},
+                    	
+                    	load: function(request) 
+                        	{
+                        		var url = request.url || "" ;
+                        		var callback = request.callback || function() {} ;
+                                
+                        		var connector = this.getConnector() ;
+                        		if (connector) 
+                            		{
+                            			this.configureConnector(connector, callback) ;
+                            			connector.open("GET", url, true) ;
+                            			connector.send("") ;
+                            		}
+                        	},
+                    	
+                    	save: function(request) 
+                        	{
+                        		var url = request.url || "" ;
+                        		var callback = request.callback || function() {} ;
+                        		var data = request.data || "" ;
+                        		var connector = this.getConnector() ;
+                        		if (connector) 
+                            		{
+                            			this.configureConnector(connector, callback);
+                            			connector.
+                            			    open("POST", url, true);
+                            			connector.
+                            			    setRequestHeader("Content-type", "application/x-www-form-urlencoded") ;
+                            			connector.
+                            				setRequestHeader("Content-length", data.length) ;
+                            			connector.
+                            				setRequestHeader("Connection", "close") ;
+                            			connector.
+                            				send(data);
+                            		}
+                        	}
+                    }
+                    
+                    function placeContent ( pContent, pIdTarget )
+                        /**
+                               set the content to targetted container 
+                        */
+                        {
+                             _.Remote.save(
+                                 {
+                                    url: "./main.php",
+                                    data: "qry=2&id=" + pIdTarget + "&content=" + reformat(pContent),
+                                    callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           var node = document.getElementById( nfo[0] ) ;
+
+                                           node.innerHTML = nfo[2] ;
+                                           
+                                           if($('contentKey').value==1)
+                                           {
+                                                setNodes(node);   
+                                           }
+                                           
+                                           _.oa.tab = new Array() ;
+                                           feedContent() ;
+                                        }
+                                  }
+                             );
+                        }
+                    
+                ]]>
+               
+                </script>
+                
+                <script id="endScript" number="">
+                    
+                    <![CDATA[
+                    
+                        _ = new _() ;
+                        
+                        function segment(pStr)
+                            /**
+                            
+                            */
+                            {
+                                var reg=new RegExp("~~", "g") ;
+                                
+                            return pStr.split(reg) ;
+                            }
+                        
+                        function isToFeed()
+                            /**
+                                check is still to feed
+                            */
+                            {
+                                return  (set = _.oa.getNodesWithId(document.body,"lay") )?set:false  ;
+                            }
+                        
+                        function feedLayout()
+                            /**
+                                feed the layout
+                            */
+                            {
+                                    var ctc = _.oa.getNodesWithId(document.body,"lay") ;
+                                    if(ctc[0])
+                                       _.Remote.save({
+                                            url: "./main.php",
+                                            data: "qry=1&id="+ctc[0].id+"&owner=" + document.getElementById("customerName").value,
+                                            callback: function(response)
+                                            {
+                                               var nfo = segment( response.text ) ;
+                                               var node = document.getElementById( nfo[0] ) ;
+                                               node.innerHTML = nfo[2] ;
+                                               node.id = nfo[1] ;
+                                               
+                                               _.oa.tab = new Array() ;
+                                               feedContent() ;
+                                            }
+                                        });
+                                }
+                        
+                        function feedData()
+                            /**
+                                feed the data
+                            */
+                            {
+                                var ctc = _.oa.getNodesWithId(document.body,"data") ;
+                                if(ctc[0])
+                                   _.Remote.save({
+                                        url: "./main.php",
+                                        data: "qry=1&id="+ctc[0].id+"&request=1&owner=" + document.getElementById("customerName").value,
+                                        callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           var node = document.getElementById( nfo[0] ) ;
+                                           node.innerHTML = nfo[2] ;
+                                           node.id = nfo[1] ;
+                                           
+                                           _.oa.tab = new Array() ;
+                                           feedContent() ;
+                                        }
+                                   });
+                            }
+                        
+                        function feedContent()
+                            /**
+                                feed the content of the page by tag expr and Id
+                            */
+                            {
+                                feedLayout() ;
+                                feedData() ;
+
+                              if($('contentKey').value!=0)
+                                {
+                                    if($('mainContent'))
+                                    {
+                                       $('mainContent').ondblclick = function (e) {feedContainer(this);};
+                                    }
+                                }
+                            }
+
+                    ]]>
+                    
+                </script>
+                
+            <script id="pagerScript" number="">
+                
+              <![CDATA[
+              
+                  function cropPage()
+                  /*
+                      get the crop page
+                      
+                      */
+                      {
+                             _.Remote.save(
+                                 {
+                                    url: "./main.php",
+                                    data: "qry=7",
+                                    callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           document.getElementById("mainContent").innerHTML = nfo[2];
+                                        }
+                                  });
+                      }
+                      
+                  function itemPage()
+                  /*
+                      get the item page
+                      
+                      */
+                      {
+                             _.Remote.save(
+                                 {
+                                    url: "./main.php",
+                                    data: "qry=8",
+                                    callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           document.getElementById("mainContent").innerHTML = nfo[2];
+                                        }
+                                  });
+                      }
+                      
+                  function pagePage()
+                  /*
+                      get the page page
+                      
+                      */
+                      {
+                             _.Remote.save(
+                                 {
+                                    url: "./main.php",
+                                    data: "qry=9",
+                                    callback: function(response)
+                                        {
+                                           var nfo = segment( response.text ) ;
+                                           document.getElementById("mainContent").innerHTML = nfo[2];
+                                        }
+                                  });
+                      }
+              
+              ]]>
+                
+            </script>
+                
+            <script id="adminScript" number="">
+                
+               <![CDATA[
+                   
+                 // $('mainContent').onDblClick = "feedContainer(this);";
+                   
+               ]]>
+                
+            </script>
+	</scripts>
+	<framesets>
+        <frameset id=""/>
+        <frameset id="common">&lt;?xml version="1.0" encoding="UTF-8" ?&gt;
+                {{inc:token[HTML4]}}
+                &lt;html&gt;
+                    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt;
+                    &lt;head&gt;
+                        
+                        &lt;style&gt;{{inc:style[standard]}}&lt;/style&gt;
+                        
+                        &lt;script&gt;{{inc:script[topScript]}}&lt;/script&gt;
+                        &lt;script&gt;{{inc:script[pagerScript]}}&lt;/script&gt;
+                        
+                        {{inc:script[prototype]}}
+                        
+                    &lt;/head&gt;
+                    
+                    &lt;body onload="feedContent()"&gt;
+                    
+                        {{inc:customer}}
+                        
+                        {{inc:menuPane}}
+                        {{inc:bottomPane}}
+                        
+                        &lt;!-- Page entry --&gt;
+                        &lt;div id='mainContent'&gt;
+                        
+                            {{inc:page[standard]}}
+                        
+                        &lt;/div&gt;
+                        
+                    &lt;/body&gt;
+                    
+                    &lt;script&gt;
+                    
+                         {{inc:script[endScript]}}
+                         
+                    &lt;/script&gt;
+                    
+                &lt;/html&gt;</frameset>
+                
+                </framesets>
+	<tokens>
+	        <token id=""/>
+		<token id="xhtmlTransitional">
+		
+			<![CDATA[
+			
+				<!DOCTYPE html PUBLIC 
+					"-//W3C//DTD XHTML 1.0 Transitional//EN" 
+					"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+			
+			]]>
+		
+		</token>
+		
+        <token id="HTML4">
+            
+            <![CDATA[
+                 
+                    <!DOCTYPE HTML PUBLIC 
+                        "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                        "http://www.w3.org/TR/html4/loose.dtd">
+                 
+           ]]>
+           
+        </token>
+        
+        <token id="xhtmlstrict">
+            
+            <![CDATA[
+                 
+                 <!DOCTYPE html PUBLIC
+                     "-//W3C//DTD XHTML 1.0 Strict//EN" 
+                     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+                     
+           ]]>
+           
+        </token>
+        
+        <token id="xhtml_xmlns">
+            
+            <![CDATA[
+                
+                http://www.w3.org/1999/xhtml
+                
+            ]]>
+            
+        </token>
+        </tokens>
+	<pages>
+                   <page id=""/>
+            <page id="standard">&lt;input type="hidden" id="iCounter" name="nCounter" value="0" /&gt;
+&lt;div id="lay:frameContent" class="toFeed" &gt;&gt; mainEntry container&lt;/div&gt;</page>
+            
+            <page id="frameContent">&lt;div id="lay:topContent"&gt;&lt;/div&gt;
+&lt;div id="lay:mainContent"&gt;&lt;/div&gt;
+&lt;div  id="lay:bottomContent"&gt;&lt;/div&gt;</page>
+            
+            <page id="topContent">
+                
+                <![CDATA[
+                
+                   <div> > My Tiny CMS | TOP CONTENT</div>
+                
+                ]]>
+                
+            </page>
+            <page id="loginPane">
+                
+                <![CDATA[
+                        
+                        <div>
+                            
+                            <input id="iUsr" type="text" value=" " style="width:96%;" /><br/>
+                            <input id="iButton" type="button" value="log on"  style="width:100%;" />
+                            
+                       </div>
+                        
+                ]]>
+                
+            </page>
+            
+            <page id="menuPane">
+                
+                <![CDATA[
+                    
+                    <div class="panel">
+                        <span onclick="showHide($('cMenu'),1);collapse(this);">[+]</span>
+                        <span id="cMenu">  !.crop | !.item | !.page
+                            <p />
+                            <span onclick="showHide($('loginPane'),2);">:: Login Pane ::</span>
+                            <span><div id="lay:loginPane"></div></span>
+
+                        </span>
+                    </div>
+                    
+                ]]>
+                
+            </page>
+            
+            <page id="mainContent">
+                
+                <![CDATA[
+
+                    <div id="mainContent">
+                        
+                        <div id="data:1|1|rootEntry"></div>
+                        
+                    </div>
+                ]]>
+                
+            </page>
+            
+            <!-- 
+            
+                The bottom tool may contain all the moderator and admin utilities
+            
+            -->
+            <page id="bottomTool">
+                
+                <![CDATA[
+                
+                    <!--
+                    <div class="bottomTool">
+                        <span onclick="showHide($('cBottom'),1);collapse(this);">[+]</span>
+                        <span id="cBottom">:: Bottom Tool ::
+                        <div id="cBottomPane"></div>
+                        </span>
+                    </div>
+                    -->
+                    
+                ]]>
+                
+            </page>
+            
+            <page id="bottomContent">
+                
+                <![CDATA[
+                    
+                    <div> myTinyCS @ | version 1.0 </div>
+                    
+                ]]>
+                
+            </page>
+            
+            <page id="lay_01"/>
+            <page id="lay_02"/>  
+            </pages>
+	<styles>
+	        <style id=""/>
+	                    
+                <style id="standard">body
+                        {
+                            /* background-color:red; */
+                            font-family:verdana;
+                            font-size:10px;
+                            margin:0px 0px 0px 0px;
+                            padding:0px;
+                        }
+                        
+                    .click
+                        {
+                            cursor:pointer;
+                        }
+                        
+                    .style_01
+                        {
+                            /* some style in */
+                        }
+                    
+                    .encoder
+                        {
+                            font-size:11px;
+                            font-family:verdana;
+                            width:95%;
+                        }
+                     
+                     .title td
+                         {
+                             font-weight:bold;
+                         }
+                     
+                     .specButton
+                        {
+                            font-weight:bold;
+                            cursor:pointer;
+                            font-size:10px;
+                            font-family:verdana;
+                        }
+                        
+                    div
+                        {
+                            /* border: grey 1px solid ; */
+                           
+                        }
+                    
+                    .dirPath
+                        {
+                            background-color:yellow;
+                        }
+                    
+                    .red
+                        {
+                            color:red;
+                        }
+                    
+                    .green
+                        {
+                            color:green;
+                        }
+                    
+                    .dark
+                        {
+                            padding:2px;
+                            background:#bbb;
+                            /* font-weight:bold; */
+                            color:white;
+                        }
+                    
+                    .panel 
+                        {
+                            position: absolute;
+                            background:#eee;
+                            top: 1em;
+                            right: 2%;
+                            border: 1px solid #000000;
+                            padding: 1em;
+                            z-index: 10;
+                            width: 200;
+                        }
+                        
+                    .adminMenu 
+                        {
+                            position: fixed;
+                            background:#eee;
+                            top: 1em;
+                            left: 2%;
+                            border: 1px solid #000000;
+                            padding: 1em;
+                            z-index: 10;
+                            width: 200;
+                        }
+                    
+                    .bottomTool 
+                        {
+                            position: fixed;
+                            background:#eee;
+                            bottom: 1em;
+                            left: 2%;
+                            border: 1px solid #000000;
+                            padding: 1em;
+                            z-index: 10;
+                            /* width: 75%; */
+                            overflow:auto;
+                        }
+                    
+                    /* */
+                    input
+                        {
+                            width:80%;
+                        }</style>
+	<style id="test">test{}</style></styles>
+
+</template>

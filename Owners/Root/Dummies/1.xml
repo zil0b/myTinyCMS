@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<crop id="" number="1">
+
+    <topic>root crop page</topic>
+    <scope>main entry of the web site</scope>
+    <fields count="2">
+        
+        <field number="0" id="dummy">
+            <subject/>
+            <content/>
+        </field>
+        
+        <field number="1" id="rootEntry">
+            <subject>rootEntry</subject>
+            <content>&lt;div id="data:1|2|mainEntry"&gt;&lt;/div&gt;</content>
+        </field>
+        
+    <field id="mainEntry" number="2"><subject>mainEntry</subject><content>--&gt; main entry test</content></field></fields>
+
+</crop>
